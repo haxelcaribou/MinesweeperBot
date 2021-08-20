@@ -3,6 +3,7 @@
 import discord
 import secrets
 import random
+import re
 
 
 client = discord.Client()
@@ -10,16 +11,11 @@ client = discord.Client()
 
 size = 11
 num_mines = 16
-blank_emote = "blaank"
-bomb_emote = "a"
-
-rows = size
-columns = size
 
 status = "Minesweeper"
 
 
-def generate_board(rows, columns):
+def generate_board(rows, columns, num_mines):
     board = [[0 for i in range(0, rows)] for j in range(0, columns)]
 
     board_coordinates = [(x, y) for x in range(0, columns)
@@ -38,9 +34,9 @@ def generate_board(rows, columns):
     return board
 
 
-def convert():
+def convert(board, zero_emote="zero", bomb_emote="a"):
     message = ""
-    emotes = [blank_emote, "one", "two", "three", "four",
+    emotes = [zero_emote, "one", "two", "three", "four",
               "five", "six", "seven", "eight", bomb_emote]
 
     for row in board:
@@ -68,7 +64,8 @@ async def on_message(message):
 
     message_content = message.clean_content.lower()
 
-    if message_content.startswith("!~ "):
-
+    if message_content.startswith("minesweeper"):
+        message = convert(generate_board(size, size, num_mines))
+        await channel.send(message)
 
 client.run(secrets.token)
