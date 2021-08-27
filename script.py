@@ -5,6 +5,10 @@ import secrets
 import random
 import re
 
+# TODO:
+# Larger boards using multiple messages
+# Better user input
+# Visible opening position
 
 client = discord.Client()
 
@@ -28,7 +32,7 @@ def generate_board(rows, columns, num_mines):
         neighbors = [(x - 1, y), (x - 1, y + 1), (x, y - 1), (x + 1, y - 1),
                      (x + 1, y), (x + 1, y + 1), (x, y + 1), (x - 1, y - 1)]
         for n in neighbors:
-            if 0 <= n[0] <= rows - 1 and 0 <= n[1] <= columns - 1 and n not in mine_coordinates:
+            if 0 <= n[0] < rows and 0 <= n[1] < columns and n not in mine_coordinates:
                 board[n[0]][n[1]] += 1
 
     return board
@@ -41,9 +45,7 @@ def convert(board, zero_emote="zero", bomb_emote="a"):
 
     for row in board:
         for square in row:
-            message += "||:"
-            message += emotes[square]
-            message += ":||"
+            message += f"||:{emotes[square]}:||"
         message += "\n"
 
     return message
@@ -69,7 +71,7 @@ async def on_message(message):
         num_mines = 15
         if num_input:
             num_mines = int(num_input.group(0))
-        await channel.send("creating board with " + str(num_mines) + " mines")
+        await channel.send(f"creating board with {num_mines} mines")
         await channel.send(convert(generate_board(9, 11, num_mines)))
 
 client.run(secrets.token)
