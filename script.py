@@ -18,7 +18,7 @@ client = discord.Client()
 
 status = "Minesweeper"
 
-message_regex = re.compile(r"minesweep(er)?( ([12]\d|[5-9]))?")
+message_regex = re.compile(r"^minesweep(er)?( ([12]\d|[5-9]))?$")
 num_regex = re.compile(r"\d?\d")
 
 
