@@ -4,11 +4,14 @@ import discord
 import secrets
 import random
 import re
+import numpy as np
+import math
 
 # TODO:
-# Larger boards using multiple messages
 # Better user input
 # Visible opening position
+
+# 99 mines max
 
 client = discord.Client()
 
@@ -57,6 +60,9 @@ async def on_ready():
     await client.change_presence(activity=discord.Game(status))
 
 
+rows = 9
+columns = 11
+
 @client.event
 async def on_message(message):
     if message.author == client.user:
@@ -68,10 +74,17 @@ async def on_message(message):
 
     if message_regex.match(message_content):
         num_input = num_regex.search(message_content)
+        num_squares = rows * columns
         num_mines = 15
         if num_input:
             num_mines = int(num_input.group(0))
-        await channel.send(f"creating board with {num_mines} mines")
-        await channel.send(convert(generate_board(9, 11, num_mines)))
+        await channel.send(f"creating {rows}x{columns} board with {num_mines} mines")
+        if num_squares < 100:
+            await channel.send(convert(generate_board(rows, columns, num_mines)))
+        else:
+            board = generate_board(rows, columns, num_mines)
+            parts = np.array_split(board, math.ceil(num_squares / 99))
+            for part in parts:
+                await channel.send(convert(list(part)))
 
 client.run(secrets.token)
