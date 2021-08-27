@@ -7,19 +7,22 @@ import re
 import numpy as np
 import math
 
+
 # TODO:
 # Better user input
 # Visible opening position
 
-# 99 mines max
+# 99 mines max per message
+
 
 client = discord.Client()
 
 
 status = "Minesweeper"
 
-message_regex = re.compile(r"^minesweep(er)?( ([12]\d|[5-9]))?$")
-num_regex = re.compile(r"\d?\d")
+message_regex = re.compile(r"^minesweep(er)?")
+num_regex = re.compile(r"(?<= -mines )\d?\d")
+dim_regex = re.compile(r"(?<= -size )\d?\dx\d?\d")
 
 
 def generate_board(rows, columns, num_mines):
@@ -60,9 +63,6 @@ async def on_ready():
     await client.change_presence(activity=discord.Game(status))
 
 
-rows = 9
-columns = 11
-
 @client.event
 async def on_message(message):
     if message.author == client.user:
@@ -73,17 +73,30 @@ async def on_message(message):
     message_content = message.clean_content.lower()
 
     if message_regex.match(message_content):
-        num_input = num_regex.search(message_content)
+        rows = 9
+        columns = 11
+
+        dim_input = dim_regex.search(message_content)
+        if dim_input:
+            dim = dim_input.group(0).split("x")
+            rows = int(dim[0])
+            columns = int(dim[1])
+
         num_squares = rows * columns
-        num_mines = 15
+        num_mines = int(num_squares / 8)
+
+        num_input = num_regex.search(message_content)
         if num_input:
             num_mines = int(num_input.group(0))
+
         await channel.send(f"creating {rows}x{columns} board with {num_mines} mines")
         if num_squares < 100:
             await channel.send(convert(generate_board(rows, columns, num_mines)))
         else:
             board = generate_board(rows, columns, num_mines)
-            parts = np.array_split(board, math.ceil(num_squares / 99))
+            # rows per message = int(99/columns)
+            num_messages = math.ceil(rows / int(99 / columns))
+            parts = np.array_split(board, num_messages)
             for part in parts:
                 await channel.send(convert(list(part)))
 
